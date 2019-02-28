@@ -3,17 +3,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:focusableInTouchMode="true"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
     <EditText
-        android:id="@+id/etEmail"
+        android:id="@+id/etName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:hint="Email"
-        android:inputType="textEmailAddress"
+        android:layout_marginTop="8dp"
+        android:hint="Name"
+        android:inputType="textCapWords"
         android:text="" />
 
     <EditText
@@ -21,9 +22,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:hint="Password"
         android:inputType="numberPassword"
+        android:text="" />
+
+    <EditText
+        android:id="@+id/etPriority"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:digits="0123456789"
+        android:hint="Priority"
+        android:inputType="number"
         android:text="" />
 
     <TableLayout
@@ -48,8 +60,49 @@
                 android:text="Delete" />
 
             <Button
-                android:onClick="fetchData"
+                android:onClick="loadData"
                 android:text="Fetch" />
+        </TableRow>
+
+        <TableRow>
+
+            <Button
+                android:onClick="paginationOnClick"
+                android:text="Pagination" />
+
+            <Button
+                android:onClick="batchWrite"
+                android:text="Batch Write" />
+
+            <Button
+                android:onClick="transactionOnClick"
+                android:text="Transaction" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <Button
+                android:onClick="updateArray"
+                android:text="update Array" />
+
+            <Button
+                android:onClick="searchArray"
+                android:text="Search Array" />
+
+        </TableRow>
+        <TableRow>
+            <Button
+                android:onClick="updateMap"
+                android:text="update map" />
+
+            <Button
+                android:onClick="searchMap"
+                android:text="Search map" />
+            <Button
+                android:onClick="subCollection"
+                android:text="Sub Col"
+                />
         </TableRow>
     </TableLayout>
 
