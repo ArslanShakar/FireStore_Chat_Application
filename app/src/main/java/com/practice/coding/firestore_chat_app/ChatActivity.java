@@ -27,8 +27,8 @@ public class ChatActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private EditText etMessage;
     private ChatAdapter adapter;
-    private String receiverId;
-    private static String senderId;
+    private String receiverId, senderId;
+    private static String currentLoginUserID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,13 +38,15 @@ public class ChatActivity extends AppCompatActivity {
         //received Intent data
         if (getIntent() != null) {
             receiverId = getIntent().getStringExtra(Constants.RECEIVER_ID_KEY);
+            senderId = getIntent().getStringExtra(Constants.SENDER_ID_KEY);
         }
+        //Toast.makeText(this, receiverId, Toast.LENGTH_SHORT).show();
         recyclerView = findViewById(R.id.recyclerView);
         etMessage = findViewById(R.id.etMessage);
 
         adapter = new ChatAdapter(this, arrayList);
 
-        senderId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        currentLoginUserID = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
 
     }
@@ -55,7 +57,7 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
 
-        if (senderId.isEmpty()) {
+        if (currentLoginUserID.isEmpty()) {
             startActivity(new Intent(this, LoginActivity.class));
             Toast.makeText(this, "Please Log In First...", Toast.LENGTH_SHORT).show();
         }
@@ -70,12 +72,12 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
 
-        model.setUserId(senderId);
+        model.setUserId(currentLoginUserID);
         model.setMessage(message);
 
         Map<String, String> map = new HashMap<>();
         map.put(Keys.MESSAGE_KEY, message);
-        map.put(Keys.SENDER_ID, senderId);
+        map.put(Keys.SENDER_ID, currentLoginUserID);
 
         // model.setChatMap(map);
 
@@ -98,8 +100,11 @@ public class ChatActivity extends AppCompatActivity {
                         adapter.notifyDataSetChanged();
                         for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
                             ChatModel chatModel = documentSnapshot.toObject(ChatModel.class);
-                            if ((senderId.equals(chatModel.getUserId()) && receiverId.equals(chatModel.getReceiverId())) || (receiverId.equals(chatModel.getUserId()) && senderId.equals(chatModel.getReceiverId()))) {
-                                chatModel.setReceiverId("");
+                            if ((currentLoginUserID.equals(chatModel.getUserId()) && receiverId.equals(chatModel.getReceiverId())) ||
+                                    (receiverId.equals(chatModel.getUserId()) && currentLoginUserID.equals(chatModel.getReceiverId()))
+                                    || (receiverId.equals(currentLoginUserID) && senderId.equals(chatModel.getUserId()))
+                                    )
+                            {
                                 arrayList.add(chatModel);
                             }
                         }

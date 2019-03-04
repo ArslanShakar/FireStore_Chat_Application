@@ -9,16 +9,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import java.util.ArrayList;
 
 public class AllChatsAdapter extends RecyclerView.Adapter<AllChatsAdapter.VH> {
 
     private Context context;
     private ArrayList<ChatModel> arrayList;
+    private String currentUser;
 
     public AllChatsAdapter(Context context, ArrayList<ChatModel> arrayList) {
         this.context = context;
         this.arrayList = arrayList;
+        currentUser = FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
 
     @NonNull
@@ -30,7 +34,12 @@ public class AllChatsAdapter extends RecyclerView.Adapter<AllChatsAdapter.VH> {
 
     @Override
     public void onBindViewHolder(@NonNull VH vh, int i) {
-        vh.tvName.setText(arrayList.get(i).getReceiverId());
+        if (currentUser.equals(arrayList.get(i).getReceiverId())) {
+            vh.tvName.setText(arrayList.get(i).getUserId());
+        } else {
+            vh.tvName.setText(arrayList.get(i).getReceiverId());
+        }
+
         vh.tvChatDescription.setText(arrayList.get(i).getMessage());
     }
 
@@ -54,7 +63,13 @@ public class AllChatsAdapter extends RecyclerView.Adapter<AllChatsAdapter.VH> {
         @Override
         public void onClick(View v) {
             Intent intent = new Intent(context, ChatActivity.class);
-            intent.putExtra(Constants.RECEIVER_ID_KEY, arrayList.get(getAdapterPosition()).getReceiverId());
+            if (currentUser.equals(arrayList.get(getAdapterPosition()).getReceiverId())) {
+                intent.putExtra(Constants.SENDER_ID_KEY, arrayList.get(getAdapterPosition()).getReceiverId());
+                intent.putExtra(Constants.RECEIVER_ID_KEY, arrayList.get(getAdapterPosition()).getUserId());
+            } else {
+                intent.putExtra(Constants.SENDER_ID_KEY, arrayList.get(getAdapterPosition()).getUserId());
+                intent.putExtra(Constants.RECEIVER_ID_KEY, arrayList.get(getAdapterPosition()).getReceiverId());
+            }
             context.startActivity(intent);
         }
     }
