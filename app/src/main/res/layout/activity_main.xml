@@ -8,13 +8,13 @@
     tools:context=".MainActivity">
 
     <EditText
-        android:id="@+id/etName"
+        android:id="@+id/etEmail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:hint="Name"
-        android:inputType="textCapWords"
+
+        android:hint="Email"
+        android:inputType="textEmailAddress"
         android:text="" />
 
     <EditText
@@ -22,7 +22,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
         android:hint="Password"
         android:inputType="numberPassword"
         android:text="" />
@@ -32,7 +31,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
         android:digits="0123456789"
         android:hint="Priority"
         android:inputType="number"
@@ -43,7 +41,7 @@
         android:layout_height="wrap_content"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
-        android:stretchColumns="*">
+        android:shrinkColumns="*">
 
         <TableRow>
 
@@ -68,15 +66,18 @@
 
             <Button
                 android:onClick="paginationOnClick"
-                android:text="Pagination" />
+                android:text="Pagination"
+                android:textSize="10sp" />
 
             <Button
                 android:onClick="batchWrite"
-                android:text="Batch Write" />
+                android:text="Batch Write"
+                android:textSize="10sp" />
 
             <Button
                 android:onClick="transactionOnClick"
-                android:text="Transaction" />
+                android:text="Transaction"
+                android:textSize="8sp" />
 
         </TableRow>
 
@@ -84,25 +85,36 @@
 
             <Button
                 android:onClick="updateArray"
-                android:text="update Array" />
+                android:text="update Array"
+                android:textSize="10sp" />
 
             <Button
                 android:onClick="searchArray"
-                android:text="Search Array" />
+                android:text="Search Array"
+                android:textSize="10sp" />
+
+            <Button
+                android:onClick="chatActivityOpen"
+                android:text="Chat" />
 
         </TableRow>
+
         <TableRow>
+
             <Button
                 android:onClick="updateMap"
-                android:text="update map" />
+                android:text="update map"
+                android:textSize="10sp" />
 
             <Button
                 android:onClick="searchMap"
-                android:text="Search map" />
+                android:text="Search map"
+                android:textSize="10sp" />
+
             <Button
+                android:layout_span="2"
                 android:onClick="subCollection"
-                android:text="Sub Col"
-                />
+                android:text="Sub Collection" />
         </TableRow>
     </TableLayout>
 

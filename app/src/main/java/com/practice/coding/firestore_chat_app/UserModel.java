@@ -1,4 +1,4 @@
-package com.practice.coding.firestore_practice;
+package com.practice.coding.firestore_chat_app;
 
 import com.google.firebase.firestore.IgnoreExtraProperties;
 import com.google.firebase.firestore.ServerTimestamp;
@@ -8,19 +8,19 @@ import java.util.List;
 import java.util.Map;
 
 @IgnoreExtraProperties
-public class DataModel {
-    private String userId, userName, userPassword;
+public class UserModel {
+    private String userId, userEmail, userPassword;
     private int priority;
     private @ServerTimestamp Date timeStamp;
     private List<String> listTags;
     private Map<String, String> mapKeyValue;
 
-    public DataModel() {
+    public UserModel() {
     }
 
-    public DataModel(String userId, String userName, String userPassword, int priority) {
+    public UserModel(String userId, String userEmail, String userPassword, int priority) {
         this.userId = userId;
-        this.userName = userName;
+        this.userEmail = userEmail;
         this.userPassword = userPassword;
         this.priority = priority;
     }
@@ -33,12 +33,12 @@ public class DataModel {
         this.userId = userId;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUserEmail() {
+        return userEmail;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
     }
 
     public String getUserPassword() {

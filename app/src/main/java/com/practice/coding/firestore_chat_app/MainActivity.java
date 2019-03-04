@@ -1,10 +1,13 @@
-package com.practice.coding.firestore_practice;
+package com.practice.coding.firestore_chat_app;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -16,6 +19,8 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
@@ -38,8 +43,9 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
-    private EditText etName, etPassword, etPriority;
+    private EditText etEmail, etPassword, etPriority;
 
+    private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private String user_id = "";
     private DocumentSnapshot resultDocumentSnapshot;
@@ -55,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        etName = findViewById(R.id.etName);
+        etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         listView = findViewById(R.id.listView);
         etPriority = findViewById(R.id.etPriority);
@@ -65,31 +71,32 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public void insert(View view) {
 
-        DocumentReference documentReference = collectionReference.document();
-
-        String name = etName.getText().toString();
+        String email = etEmail.getText().toString();
         String password = etPassword.getText().toString();
 
-        if (name.isEmpty() || password.isEmpty() || etPriority.getText().toString().isEmpty()) {
+        if (email.isEmpty() || password.isEmpty() || etPriority.getText().toString().isEmpty()) {
             msg("Field empty...");
+            return;
+        }
+        //Email Validation
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches() || TextUtils.isEmpty(email)) {
+            etEmail.setError("Enter valid E-mail!");
+            etEmail.requestFocus();
             return;
         }
 
 
-        DataModel dataModel = new DataModel();
-        dataModel.setUserName(name);
-        dataModel.setUserPassword(password);
+        final UserModel userModel = new UserModel();
+        userModel.setUserEmail(email);
+        userModel.setUserPassword(password);
 
-        dataModel.setPriority(Integer.parseInt(etPriority.getText().toString()));
+        userModel.setPriority(Integer.parseInt(etPriority.getText().toString()));
 
-        String uid = documentReference.getId();
-        dataModel.setUserId(uid);
-
-        String tags = "tag1, tag2,tag3";
+        final String tags = "tag1, tag2,tag3";
         String[] splittedArray = tags.split("\\s*,\\s*"); // \\s* removes the extras white spaces before and after the comma ,
         // OR simple we can do this like that
         //String[] split = tags.split(",");
-        dataModel.setListTags(Arrays.asList(splittedArray));
+        userModel.setListTags(Arrays.asList(splittedArray));
 
         Map<String, String> map = new HashMap<>();
         map.put("Key1", "value1");
@@ -97,15 +104,30 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         map.put("Key3", "value3");
         //    map.put("Key4", "value4");
 
-        dataModel.setMapKeyValue(map);
+        userModel.setMapKeyValue(map);
 
-        documentReference.set(dataModel).addOnCompleteListener(new OnCompleteListener<Void>() {
+        firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
-            public void onComplete(@NonNull Task<Void> task) {
+            public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
-                    msg("User Registered!");
+
+                    String uid = firebaseAuth.getCurrentUser().getUid();
+                    userModel.setUserId(uid);
+                    final DocumentReference documentReference = collectionReference.document(uid);
+
+                    documentReference.set(userModel).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                msg("User Registered!");
+                                firebaseAuth.signOut();
+                            } else {
+                                msg("Registration Failed...");
+                            }
+                        }
+                    });
                 } else {
-                    msg("Registration Failed...");
+                    msg(task.getException().getMessage());
                 }
             }
         });
@@ -134,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void onSuccess(Void aVoid) {
                     msg("Deleted");
-                    etName.setText(null);
+                    etEmail.setText(null);
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -202,11 +224,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public void loadData(View view) {
         //collectionReference.whereEqualTo(Keys.ID, null).limit(2).get()
-        //collectionReference.whereEqualTo(Keys.NAME, "abc").limit(2).get()
-        //collectionReference.orderBy(Keys.NAME).limit(2).get() //by default ascending order
-        //collectionReference.orderBy(Keys.NAME, Query.Direction.DESCENDING).get()
+        //collectionReference.whereEqualTo(Keys.EMAIL_KEY, "abc").limit(2).get()
+        //collectionReference.orderBy(Keys.EMAIL_KEY).limit(2).get() //by default ascending order
+        //collectionReference.orderBy(Keys.EMAIL_KEY, Query.Direction.DESCENDING).get()
         //Compound query
-        collectionReference.whereEqualTo(Keys.ID, null).orderBy(Keys.NAME, Query.Direction.DESCENDING).get()
+        collectionReference.whereEqualTo(Keys.ID, null).orderBy(Keys.EMAIL_KEY, Query.Direction.DESCENDING).get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
@@ -230,10 +252,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             public void onSuccess(List<QuerySnapshot> querySnapshots) {
                 for (QuerySnapshot queryDocumentSnapshots : querySnapshots) {
                     for (QueryDocumentSnapshot queryDocumentSnapshot : queryDocumentSnapshots) {
-                        DataModel dataModel = queryDocumentSnapshot.toObject(DataModel.class);
+                        UserModel dataModel = queryDocumentSnapshot.toObject(UserModel.class);
 
                         String uid = queryDocumentSnapshot.getId();
-                        String name = dataModel.getUserName();
+                        String name = dataModel.getUserEmail();
 
                         arrayList.add(name + " " + uid);
                     }
@@ -248,11 +270,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void fetchCollectionData(QuerySnapshot querySnapshots) {
         arrayList.clear();
         for (QueryDocumentSnapshot queryDocumentSnapshot : querySnapshots) {
-            DataModel model = queryDocumentSnapshot.toObject(DataModel.class);
+            UserModel model = queryDocumentSnapshot.toObject(UserModel.class);
 
             model.setUserId(queryDocumentSnapshot.getId());
             String uid = model.getUserId();
-            String name = model.getUserName();
+            String name = model.getUserEmail();
             String password = model.getUserPassword();
 
             List<String> listTags = model.getListTags();
@@ -281,7 +303,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         user_id = array[1];
 
-        etName.setText(array[0]);
+        etEmail.setText(array[0]);
     }
 
     public void paginationOnClick(View view) {
@@ -296,21 +318,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                            DataModel dataModel = documentSnapshot.toObject(DataModel.class);
+                            UserModel userModel = documentSnapshot.toObject(UserModel.class);
 
                             String uid = documentSnapshot.getId();
-                            String name = dataModel.getUserName();
+                            String name = userModel.getUserEmail();
 
-                            /*List<String> listTags = dataModel.getListTags();
+                            /*List<String> listTags = userModel.getListTags();
                             String tags = "";
                             for(String data : listTags)
                             {
                                 tags += data+"\n";
                             }
 */
-                            Map<String, String> map = dataModel.getMapKeyValue();
+                            Map<String, String> map = userModel.getMapKeyValue();
                             String data = "";
-                            for (String key : dataModel.getMapKeyValue().keySet()) {
+                            for (String key : userModel.getMapKeyValue().keySet()) {
                                 data += key + "\n";
                             }
                             arrayListPagination.add(name + " " + uid);
@@ -334,10 +356,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                            DataModel dataModel = documentSnapshot.toObject(DataModel.class);
+                            UserModel dataModel = documentSnapshot.toObject(UserModel.class);
 
                             String uid = documentSnapshot.getId();
-                            String name = dataModel.getUserName();
+                            String name = dataModel.getUserEmail();
 
                             arrayListPagination.add(name + " " + uid);
                         }
@@ -357,18 +379,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void batchWrite(View view) {
         WriteBatch batch = db.batch();
 
-        DocumentReference doc = collectionReference.document("New User");
-        batch.set(doc, new DataModel(doc.getId(), "New Name", "123", 4));
+        DocumentReference doc = collectionReference.document("do7IX4ZHvtfgEoLhq3PUSLUWJrq2");
+        batch.set(doc, new UserModel(doc.getId(), "Test User", "123", 4));
 
-        DocumentReference doc2 = collectionReference.document("sHNWOSP8D4buVSUPJDTQ");
-        batch.update(doc2, Keys.NAME, "updated Name", Keys.PRIORITY, "121");
+        DocumentReference doc2 = collectionReference.document("5qRvwgpQhWU5bUI2uGXL");
+        batch.update(doc2, Keys.EMAIL_KEY, "updated Name", Keys.PRIORITY, "121");
 
 
         /*DocumentReference doc3 = collectionReference.document("dF2qvR095E6ohbs3uMXg");
         batch.delete(doc3);*/
 
         DocumentReference doc4 = collectionReference.document();
-        batch.set(doc4, new DataModel(doc4.getId(), "Other User", "123", 1));
+        batch.set(doc4, new UserModel(doc4.getId(), "Other User", "123", 1));
 
         batch.commit()
                 .addOnFailureListener(new OnFailureListener() {
@@ -456,7 +478,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Map<String, String> mapData = new HashMap<>();
         mapData.put("name", "Arslan Shakar");
         mapData.put("age", "22-years");
-        
+
         collectionReference.document("New User").collection("Sub_Collection").add(mapData).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
             @Override
             public void onComplete(@NonNull Task<DocumentReference> task) {
@@ -467,5 +489,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
             }
         });
+    }
+
+    public void chatActivityOpen(View view) {
+        startActivity(new Intent(this, LoginActivity.class));
     }
 }

@@ -1,4 +1,4 @@
-package com.practice.coding.firestore_practice;
+package com.practice.coding.firestore_chat_app;
 
 import org.junit.Test;
 

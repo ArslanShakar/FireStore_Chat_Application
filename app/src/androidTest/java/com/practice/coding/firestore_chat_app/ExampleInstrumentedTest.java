@@ -1,4 +1,4 @@
-package com.practice.coding.firestore_practice;
+package com.practice.coding.firestore_chat_app;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
